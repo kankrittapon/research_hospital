@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String // Hashed password
+  name      String?
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Research {
+  id              String   @id @default(uuid())
+  title           String
+  author          String?
+  abstract        String?
+  filePath        String   // Path to the file in storage
+  publicationDate DateTime
+  
+  // Metadata for filtering
+  year            Int
+  month           Int
+
+  tags            String[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SiteContent {
+  id        String   @id @default(uuid())
+  section   String   // e.g., "HOME_HERO", "CONTACT_INFO", "ABOUT_US"
+  key       String   @unique // e.g., "hero_title", "phone_number"
+  label     String   // Human readable label for Admin UI
+  value     String   @db.Text
+  type      String   @default("text") // "text", "textarea", "image_url"
+  
+  updatedAt DateTime @updatedAt
+}
+
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   @db.Text
+  imageUrl    String?
+  published   Boolean  @default(true)
+  publishDate DateTime @default(now())
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
