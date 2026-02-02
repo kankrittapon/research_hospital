@@ -24,9 +24,7 @@ const formSchema = z.object({
     }),
     author: z.string().optional(),
     abstract: z.string().optional(),
-    date: z.date({
-        required_error: "A publication date is required.",
-    }),
+    date: z.date(),
     files: z.array(z.instanceof(File)).min(1, "At least one file is required"),
 })
 

@@ -14,7 +14,10 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { FileText, Trash2, ExternalLink, Plus } from "lucide-react";
-import { DeleteButton } from "@/components/delete-button"; // client component for delete action
+import { SystemOperations } from "@/components/admin/system-operations";
+import { DeleteButton } from "@/components/delete-button";
+
+// ... existing imports
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
@@ -41,6 +44,11 @@ export default async function DashboardPage() {
     return (
         <div className="min-h-screen bg-slate-50 p-8">
             <div className="container mx-auto max-w-6xl space-y-6">
+                
+                {/* Admin System Operations */}
+                {session.user.role === 'ADMIN' && (
+                    <SystemOperations />
+                )}
 
                 <div className="flex items-center justify-between">
                     <div>
@@ -49,12 +57,23 @@ export default async function DashboardPage() {
                     </div>
                     <div className="flex gap-3">
                         {session.user.role === 'ADMIN' && (
-                            <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50" asChild>
-                                <Link href="/dashboard/content">จัดการหน้าเว็บ</Link>
-                            </Button>
+                            <>
+                                <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50" asChild>
+                                    <Link href="/dashboard/content">จัดการหน้าเว็บ</Link>
+                                </Button>
+                                <Button variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50" asChild>
+                                    <Link href="/dashboard/admin/projects">จัดการโครงการ (Admin)</Link>
+                                </Button>
+                            </>
                         )}
+                        <Button variant="outline" className="border-teal-200 text-teal-700 hover:bg-teal-50" asChild>
+                            <Link href="/dashboard/my-projects">โครงการของฉัน</Link>
+                        </Button>
                         <Button variant="outline" asChild>
                             <Link href="/">กลับหน้าแรก</Link>
+                        </Button>
+                        <Button variant="outline" className="border-green-200 text-green-700 hover:bg-green-50" asChild>
+                            <Link href="/dashboard/news">จัดการข่าวสาร</Link>
                         </Button>
                         <Button asChild className="shadow-md">
                             <Link href="/upload"><Plus className="mr-2 h-4 w-4" /> เพิ่มงานวิจัยใหม่</Link>

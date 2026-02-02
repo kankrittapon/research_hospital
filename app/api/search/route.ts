@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MeiliSearch } from 'meilisearch';
-
-const meiliclient = new MeiliSearch({
-    host: process.env.MEILI_HOST || 'http://localhost:7700',
-    apiKey: process.env.MEILI_MASTER_KEY,
-});
+import { meiliClient, INDEX_RESEARCH, INDEX_NEWS } from "@/lib/meili";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -15,13 +10,26 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const index = meiliclient.index('research');
-        const searchResults = await index.search(query, {
-            limit: 10,
-            attributesToHighlight: ['title', 'abstract'],
-        });
+        const researchIndex = meiliClient.index(INDEX_RESEARCH);
+        const newsIndex = meiliClient.index(INDEX_NEWS);
 
-        return NextResponse.json(searchResults);
+        const [researchResults, newsResults] = await Promise.all([
+            researchIndex.search(query, {
+                limit: 5,
+                attributesToHighlight: ['title', 'abstract'],
+            }),
+            newsIndex.search(query, {
+                limit: 5,
+                attributesToHighlight: ['title', 'content'],
+            })
+        ]);
+
+        const combinedHits = [
+            ...researchResults.hits.map(hit => ({ ...hit, type: 'research' })),
+            ...newsResults.hits.map(hit => ({ ...hit, type: 'news' }))
+        ];
+
+        return NextResponse.json({ hits: combinedHits });
 
     } catch (error) {
         console.error("Meilisearch error:", error);

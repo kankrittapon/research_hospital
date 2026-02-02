@@ -24,6 +24,7 @@ model User {
   role      Role     @default(VIEWER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  projects  Project[]
 }
 
 model Research {
@@ -63,6 +64,27 @@ model News {
   published   Boolean  @default(true)
   publishDate DateTime @default(now())
   
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ProjectStatus {
+  PENDING
+  REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  title       String
+  code        String?       // e.g. "RES-2024-001"
+  status      ProjectStatus @default(PENDING)
+  description String?       @db.Text
+  
+  ownerId     String
+  owner       User          @relation(fields: [ownerId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

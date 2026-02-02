@@ -3,7 +3,19 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, Users, Trophy, ArrowRight, Activity, Calendar, Download, Search, BookOpen, Database, Phone, MapPin, User, Home as HomeIcon, Info, Mail, Layout, CloudLightning, ChevronRight, Facebook, Youtube, Globe } from "lucide-react";
+import { ServiceCard } from "@/components/service-card";
+import {
+  FileText,
+  Phone,
+  MapPin,
+  BookOpen,
+  ArrowRight,
+  Search,
+  ChevronRight,
+  TrendingUp,
+  Newspaper,
+  Users, Trophy, Activity, Calendar, Download, Database, User, Home as HomeIcon, Info, Mail, Layout, CloudLightning, Facebook, Youtube, Globe
+} from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { SearchBox } from "@/components/search-box";
@@ -25,6 +37,15 @@ async function getSiteConfig() {
   }, {} as Record<string, string>);
 
   return {
+    nav: {
+      home: config['nav_home'] || "หน้าแรก",
+      about: config['nav_about'] || "เกี่ยวกับเรา",
+      repo: config['nav_repo'] || "คลังงานวิจัย",
+      news: config['nav_news'] || "ข่าวสาร",
+      services: config['nav_services'] || "บริการของเรา",
+      download: config['nav_download'] || "ดาวน์โหลด",
+      contact: config['nav_contact'] || "ติดต่อสอบถาม",
+    },
     hero: {
       title: config['hero_title'] || "สำนักงานส่งเสริมวิจัย",
       subtitle: config['hero_subtitle'] || "ศูนย์กลางข้อมูลงานวิจัยและนวัตกรรมทางการแพทย์ เพื่อการพัฒนาที่ยั่งยืน สนับสนุนบุคลากรในการสร้างองค์ความรู้ใหม่ตามมาตรฐานสากล",
@@ -33,6 +54,15 @@ async function getSiteConfig() {
     about: {
       title: config['about_title'] || "สำนักงานส่งเสริมวิจัย กรมแพทย์ทหารเรือ",
       desc: config['about_desc'] || "วัตถุประสงค์เพื่อส่งเสริม สนับสนุน และประสานงานด้านการวิจัย นวัตกรรม และสิ่งประดิษฐ์ทางการแพทย์ รวมถึงให้บริการทางวิชาการ เพื่อยกระดับมาตรฐานการรักษาพยาบาลและสุขภาพของกำลังพลและประชาชน",
+      image: config['about_image'] || "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1600&auto=format&fit=crop",
+      linkText: config['about_link_text'] || "อ่านเพิ่มเติม",
+      linkUrl: config['about_link_url'] || "#",
+      bullets: [
+        config['about_bullet_1'] || "ส่งเสริมงานวิจัยที่มีคุณภาพ",
+        config['about_bullet_2'] || "ให้บริการทางวิชาการ",
+        config['about_bullet_3'] || "พัฒนาศักยภาพนักวิจัย",
+        config['about_bullet_4'] || "ยกระดับมาตรฐานสุขภาพ",
+      ]
     },
     contact: {
       address: config['contact_address'] || "กรมแพทย์ทหารเรือ ถนนสมเด็จพระเจ้าตากสิน แขวงบุคคโล เขตธนบุรี กรุงเทพมหานคร 10600",
@@ -46,34 +76,51 @@ async function getSiteConfig() {
       {
         title: config['service_1_title'] || "ขออนุมัติโครงการ",
         icon: config['service_1_icon'] || "FileText",
+        image: config['service_1_image'] || "",
         desc: config['service_1_desc'] || "Submit Protocol",
-        href: "#"
+        href: config['service_1_url'] || "#",
+        detail: config['service_1_detail']
       },
       {
         title: config['service_2_title'] || "ให้คำปรึกษา",
         icon: config['service_2_icon'] || "Phone",
+        image: config['service_2_image'] || "",
         desc: config['service_2_desc'] || "Consultation",
-        href: "#"
+        href: config['service_2_url'] || "#",
+        detail: config['service_2_detail']
       },
       {
         title: config['service_3_title'] || "ติดตามโครงการ",
         icon: config['service_3_icon'] || "MapPin",
+        image: config['service_3_image'] || "",
         desc: config['service_3_desc'] || "Monitoring",
-        href: "#"
+        href: config['service_3_url'] || "#",
+        detail: config['service_3_detail']
       },
       {
         title: config['service_4_title'] || "คลังงานวิจัย",
         icon: config['service_4_icon'] || "BookOpen",
+        image: config['service_4_image'] || "",
         desc: config['service_4_desc'] || "Repository",
-        href: "/repository"
+        href: config['service_4_url'] || "/repository",
+        detail: config['service_4_detail']
       },
     ]
   };
 }
 
+async function getLatestNews() {
+  return await prisma.news.findMany({
+    where: { published: true },
+    orderBy: { publishDate: 'desc' },
+    take: 3
+  });
+}
+
 export default async function Home() {
   const session = await getServerSession(authOptions);
   const config = await getSiteConfig();
+  const latestNews = await getLatestNews();
 
   // Helper to ensure color is valid or fallback
   const primaryColor = config.theme.primary;
@@ -95,12 +142,13 @@ export default async function Home() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
-            <Link href="#" className="hover:text-[var(--primary)] transition-colors">หน้าแรก</Link>
-            <Link href="#about" className="hover:text-[var(--primary)] transition-colors">เกี่ยวกับเรา</Link>
-            <Link href="/repository" className="hover:text-[var(--primary)] transition-colors">คลังงานวิจัย</Link>
-            <Link href="#services" className="hover:text-[var(--primary)] transition-colors">บริการของเรา</Link>
-            <Link href="#" className="hover:text-[var(--primary)] transition-colors">ดาวน์โหลด</Link>
-            <Link href="#contact" className="hover:text-[var(--primary)] transition-colors">ติดต่อสอบถาม</Link>
+            <Link href="#" className="hover:text-[var(--primary)] transition-colors">{config.nav.home}</Link>
+            <Link href="#about" className="hover:text-[var(--primary)] transition-colors">{config.nav.about}</Link>
+            <Link href="/repository" className="hover:text-[var(--primary)] transition-colors">{config.nav.repo}</Link>
+            <Link href="/news" className="hover:text-[var(--primary)] transition-colors">{config.nav.news}</Link>
+            <Link href="#services" className="hover:text-[var(--primary)] transition-colors">{config.nav.services}</Link>
+            <Link href="#" className="hover:text-[var(--primary)] transition-colors">{config.nav.download}</Link>
+            <Link href="#contact" className="hover:text-[var(--primary)] transition-colors">{config.nav.contact}</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -178,12 +226,7 @@ export default async function Home() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-              {[
-                "ส่งเสริมงานวิจัยที่มีคุณภาพ",
-                "ให้บริการทางวิชาการ",
-                "พัฒนาศักยภาพนักวิจัย",
-                "ยกระดับมาตรฐานสุขภาพ"
-              ].map((item, i) => (
+              {config.about.bullets.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-slate-700">
                   <div className="h-2 w-2 rounded-full" style={{ backgroundColor: primaryColor }} />
                   {item}
@@ -193,7 +236,7 @@ export default async function Home() {
 
             <div className="pt-4">
               <Button variant="outline" className="h-12 px-8 rounded-full text-base border-slate-200 hover:bg-slate-50 hover:text-[var(--primary)]" asChild>
-                <Link href="#">อ่านเพิ่มเติม <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link href={config.about.linkUrl}>{config.about.linkText} <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
           </div>
@@ -202,7 +245,7 @@ export default async function Home() {
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-100 rounded-full opacity-50 blur-3xl" />
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border-8 border-white">
               <img
-                src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1600&auto=format&fit=crop"
+                src={config.about.image}
                 alt="About"
                 className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
               />
@@ -221,32 +264,16 @@ export default async function Home() {
 
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
-            {config.services.map((item, i) => {
-              const IconComp = ICON_MAP[item.icon];
-              return (
-                <Link key={i} href={item.href}>
-                  <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-transparent hover:border-blue-100 h-full flex flex-col items-center text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-slate-600 group-hover:bg-[var(--primary)] group-hover:text-white transition-all duration-300 group-hover:scale-110 shadow-sm group-hover:shadow-lg overflow-hidden">
-                      {IconComp ? (
-                        <IconComp className="h-8 w-8" />
-                      ) : (
-                        // Fallback for custom uploaded icons
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.icon} alt={item.title} className="w-full h-full object-cover" />
-                      )}
-                    </div>
-                    <h3 className="font-bold text-xl mb-3 text-slate-800 group-hover:text-[var(--primary)] transition-colors">{item.title}</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
-                  </div>
-                </Link>
-              )
-            })}
+
+
+            {config.services.map((item, i) => (
+               <ServiceCard key={i} {...item} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 6. News Section (Optional placeholder) */}
+      {/* 6. News Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-10">
@@ -254,42 +281,57 @@ export default async function Home() {
               <h2 className="text-3xl font-bold text-slate-900">ข่าวสารล่าสุด</h2>
               <p className="text-slate-500 mt-2">ติดตามความเคลื่อนไหวและกิจกรรมต่างๆ</p>
             </div>
-            <Button variant="ghost" className="text-[var(--primary)]">ดูทั้งหมด <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            <Button variant="ghost" className="text-[var(--primary)]" asChild>
+                <Link href="/news">ดูทั้งหมด <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((n) => (
-              <Card key={n} className="overflow-hidden hover:shadow-lg transition-shadow duration-300 group border-slate-100">
+            {latestNews.length === 0 ? (
+                <div className="col-span-3 text-center py-10 text-slate-400">ยังไม่มีข่าวสารล่าสุด</div>
+            ) : (
+                latestNews.map((news) => (
+              <Link href={`/news/${news.id}`} key={news.id} className="block h-full"> 
+              <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 group border-slate-100 flex flex-col">
                 <div className="relative h-48 bg-slate-200 overflow-hidden">
-                  <img
-                    src={`https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWVkaWNhbHxlbnwwfHwwfHx8MA%3D%3D`}
-                    alt="news"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                  {news.imageUrl ? (
+                    <Image
+                        src={news.imageUrl}
+                        alt={news.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
+                        <FileText className="h-12 w-12" />
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 bg-[var(--primary)] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
                     News
                   </div>
                 </div>
                 <CardHeader>
                   <h3 className="font-bold text-lg line-clamp-2 group-hover:text-[var(--primary)] transition-colors">
-                    ขอเชิญเข้าร่วมอบรมเชิงปฏิบัติการ การเขียนโครงร่างงานวิจัย ประจำปี 2569
+                    {news.title}
                   </h3>
-                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-2">
-                    <Calendar className="h-3 w-3" /> 28 ม.ค. 2569
-                  </p>
+                  <div className="text-xs text-slate-500 flex items-center gap-1 mt-2">
+                    <Calendar className="h-3 w-3" /> {new Date(news.publishDate).toLocaleDateString('th-TH')}
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-grow">
                   <p className="text-sm text-slate-600 line-clamp-2">
-                    อบรมเพื่อพัฒนาศักยภาพบุคลากรในการทำวิจัย ให้ถูกต้องตามหลักวิชาการและจริยธรรมการวิจัยในมนุษย์
+                    {news.content}
                   </p>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="mt-auto">
                   <span className="text-sm font-semibold text-[var(--primary)] flex items-center group-hover:translate-x-1 transition-transform cursor-pointer">
                     อ่านต่อ <ArrowRight className="ml-1 h-3 w-3" />
                   </span>
                 </CardFooter>
               </Card>
-            ))}
+              </Link>
+            )))}
           </div>
         </div>
       </section>
