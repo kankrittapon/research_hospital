@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,10 +82,10 @@ export default function MyProjectsPage() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'APPROVED': return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1"/>อนุมัติแล้ว</Badge>;
-            case 'REJECTED': return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="w-3 h-3 mr-1"/>ถูกปฏิเสธ</Badge>;
-            case 'REVIEW': return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1"/>กำลังตรวจสอบ</Badge>;
-            default: return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1"/>รอการตรวจสอบ</Badge>;
+            case 'APPROVED': return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />อนุมัติแล้ว</Badge>;
+            case 'REJECTED': return <Badge className="bg-red-500 hover:bg-red-600"><XCircle className="w-3 h-3 mr-1" />ถูกปฏิเสธ</Badge>;
+            case 'REVIEW': return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1" />กำลังตรวจสอบ</Badge>;
+            default: return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" />รอการตรวจสอบ</Badge>;
         }
     };
 
